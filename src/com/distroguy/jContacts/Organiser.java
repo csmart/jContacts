@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class Organiser {
 
-	// array list to store contact objects
+	// Array list to store contact objects
 	private ArrayList<Contact> contacts;
 
 	// Preferences
@@ -29,31 +29,35 @@ public class Organiser {
 
 	// Load database
 	public int load(){
-		//read in database
-		//build arraylist of contacts
+		// Read in database and build arraylist of contacts
+		// TODO
+		
+		// Dummy data for now
 		Contact newContact = new Contact();
 		newContact.setSalutation("Mr");
 		newContact.setFirstname("Chris");
-		newContact.setMiddlename("David");
+//		newContact.setMiddlename("");
 		newContact.setLastname("Smart");
-		newContact.setPhone(123);
-		newContact.setMobile(456);
+		newContact.setPhone("026123456");
+		newContact.setMobile("04123456");
 		contacts.add(newContact);
+		
 		Contact newContact2 = new Contact();
 		newContact2.setSalutation("Dr");
-		newContact2.setFirstname("Paul");
-		newContact2.setMiddlename("Ringo");
-		newContact2.setLastname("Beatle");
-		newContact2.setPhone(789);
-		newContact2.setMobile(000);
+		newContact2.setFirstname("Ringo");
+		newContact2.setMiddlename("the");
+		newContact2.setLastname("Star");
+		newContact2.setPhone("+12123456");
+		newContact2.setMobile("+14123456");
 		contacts.add(newContact2);
 
+		// Check for success?
 		return 0;
 	}
 
 	// Load database
 	public int save(){
-		//write arraylist out to contact in format as per prefs
+		// Write arraylist out to contact in format as per prefs
 		return 0;
 	}
 	
@@ -62,7 +66,7 @@ public class Organiser {
 		return contacts;
 	}
 
-	// return a filtered arraylist
+	// Return a filtered arraylist for searching
 	public ArrayList<Contact> getContacts(String contact){
 		//new array for filtered contact list
 		ArrayList<Contact> contactsFiltered = new ArrayList<Contact>();
@@ -75,6 +79,7 @@ public class Organiser {
 		System.out.println("Loading preferences");
 	}
 	
+	// Return a 2-dimensional array of contact data (useful for table)
 	public String[][] getStrings(){
 		String[][] contactStrings = new String[contacts.size()][Contact.getAttributes().length];
 		int i = 0;
@@ -83,6 +88,47 @@ public class Organiser {
 			i++;
 		}
 		return contactStrings;
+	}
+	
+	// Create a new contact
+	public void addContact(){
+		Contact newContact = new Contact();
+		contacts.add(newContact);
+	}
+
+	// Copy an existing contact to a new one
+	public void copyContact(int user){
+		Contact newContact = new Contact();
+		String[] copyData = contacts.get(user).getStrings();
+		newContact.setStrings(copyData);
+		newContact.setUuid();
+		contacts.add(newContact);
+	}
+
+	// Delete an existing contact
+	public void delContact(Contact contact) {
+		contacts.remove(contact);
+	}
+
+	// Return a contact object from arraylist
+	public Contact getContact(int i) {
+		return contacts.get(i);
+	}
+
+	// Return a contact object that matches given UUID
+	public Contact getContact(String uuid) {
+		for (Contact thisContact : contacts){
+			if (thisContact.getUuid().equals(uuid));{
+				System.out.println("removed " + thisContact.getFirstname());
+				return(thisContact);
+			}
+		}
+		return null;
+	}
+
+	// Update specific data for a contact
+	public void updateData(int row, String columnName, String data) {
+		contacts.get(row).setString(columnName, data);
 	}
 
 }

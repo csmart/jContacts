@@ -24,6 +24,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -32,7 +34,7 @@ import javax.swing.table.DefaultTableModel;
  *
  */
 
-public class MainGUI implements Runnable, ActionListener, MouseListener {
+public class MainGUI implements Runnable, ActionListener, MouseListener, TableModelListener {
 	// create our organiser
 	Organiser organiser;
 
@@ -42,7 +44,8 @@ public class MainGUI implements Runnable, ActionListener, MouseListener {
 	JFileChooser fileChooser;
 	JTable organiserTable;
 	DefaultTableModel organiserTableModel;
-
+	String[] tableColumns;
+	
 	public MainGUI(){
 		// Invoke the main UI later to avoid race conditions
 		SwingUtilities.invokeLater(this);
@@ -70,7 +73,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener {
 		// Set up data
 		organiser = new Organiser();
 
-		// Print out objects in arraylist
+		// debug - print out objects in arraylist
 		for (Contact thisContact : organiser.getContacts()){
 			System.out.println(thisContact.getFirstname());
 		}
@@ -83,15 +86,14 @@ public class MainGUI implements Runnable, ActionListener, MouseListener {
 		organiserPane  = organiserFrame.getContentPane();
 		organiserPane.setLayout(new BorderLayout());
 
-		// Create table to hold our data
+		// Create table to hold our contact list data, set model, add listener so we can get data changes
 		organiserTableModel = new DefaultTableModel();
 		organiserTable = new JTable(organiserTableModel);
+		organiserTable.getModel().addTableModelListener(this);
 
 		// Create data and populate table
-		String[] tableColumns = Contact.getAttributes();
-		Object[][] tableData = organiser.getStrings();
-		organiserTableModel.setDataVector(tableData, tableColumns);
-
+		tableColumns = Contact.getAttributes();
+		setTableData();
 		JScrollPane tablePane = new JScrollPane(organiserTable);
 		organiserTable.setFillsViewportHeight(true);
 		organiserTable.addMouseListener(this);
@@ -113,6 +115,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener {
 
 		// Add items in the Edit menu
 		JMenuItem addMenuItem = addMenuItems("Add", organiserEditMenu);
+		JMenuItem copyMenuItem = addMenuItems("Copy", organiserEditMenu);
 		JMenuItem editMenuItem = addMenuItems("Edit", organiserEditMenu);
 		JMenuItem deleteMenuItem = addMenuItems("Delete", organiserEditMenu);
 
@@ -139,6 +142,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener {
 
 		// Create the buttons
 		JButton addButton = addButtons("Add", buttonsPanel);
+		JButton copyButton = addButtons("Copy", buttonsPanel);
 		JButton editButton = addButtons("Edit", buttonsPanel);
 		JButton deleteButton = addButtons("Delete", buttonsPanel);
 		buttonsPanel.add(Box.createHorizontalGlue()); // Create space so others are on the right
@@ -156,23 +160,51 @@ public class MainGUI implements Runnable, ActionListener, MouseListener {
 		organiserFrame.setVisible(true);
 	}
 
-	private Object[][] getTableData(ArrayList<Contact> contacts) {
-		System.out.println("number of contacts " + contacts.size() + " number of attributes " + Contact.getAttributes().length);
-		Object[][] tableData = new Object[contacts.size()][Contact.getAttributes().length];
-		int i = 0;
-		for (Contact thisContact : contacts){
-			tableData[i][0] = thisContact.getFirstname();
-			tableData[i][1] = thisContact.getMiddlename();
-			tableData[i][2] = thisContact.getLastname();
-			tableData[i][3] = thisContact.getPhone();
-			tableData[i][4] = thisContact.getMobile();
-			i++;
-		}
-		return tableData;
-	}
-
 	public static void main(String[] args) {
 		new MainGUI();		
+	}
+
+	public void addUser() {
+		organiser.addContact();
+		clearTableData();
+		setTableData();
+	}
+
+	private void copyUser() {
+		organiser.copyContact(organiserTable.getSelectedRow());
+		clearTableData();
+		setTableData();
+	}
+
+	public void delUser() {
+		// Temporary array to hold a list of contact objects we need to delete
+		ArrayList<Contact> deleteContacts = new ArrayList<Contact>();
+		System.out.print("Selected row(s) for deletion: ");
+		for (int i : organiserTable.getSelectedRows()){
+			System.out.print(i + " (" + organiser.getContact(i).getFirstname() + ") ");
+			// Build list of contacts to delete
+			deleteContacts.add(organiser.getContact(i));
+		}
+		System.out.println("");
+		// Delete contacts here, no array indexing when deleting
+		for (Contact contact : deleteContacts){
+			organiser.delContact(contact);
+		}
+		clearTableData();
+		setTableData();		
+	}
+	
+	public void setTableData() {
+		organiserTableModel.setDataVector(getTableData(), tableColumns);
+	}
+
+	public void clearTableData() {
+		organiserTableModel.setRowCount(0);
+	}
+
+	public Object[][] getTableData() {
+		Object[][] tableData = organiser.getStrings();
+		return tableData;
 	}
 
 	@Override
@@ -183,6 +215,12 @@ public class MainGUI implements Runnable, ActionListener, MouseListener {
 				System.out.println("Bye, bye!");
 				System.exit(0);
 			};
+		}else if (e.getActionCommand().equals("ADD_PRESSED")) {
+			addUser();
+		}else if (e.getActionCommand().equals("COPY_PRESSED")) {
+			copyUser();
+		}else if (e.getActionCommand().equals("DELETE_PRESSED")) {
+			delUser();
 		}else if (e.getActionCommand().equals("SAVE_PRESSED")) {
 			int res = fileChooser.showSaveDialog(organiserFrame);
 			if ( res == fileChooser.APPROVE_OPTION ){
@@ -199,33 +237,41 @@ public class MainGUI implements Runnable, ActionListener, MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		//		if (e.getClickCount() == 2){
-		System.out.println("Clicked " + organiserTable.getSelectedRow());
-		//			organiserTableModel.setRowCount(0);
-		//		}
+//		System.out.println("Pressed " + organiserTable.getSelectedRow());
 	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		System.out.println("Pressed " + organiserTable.getSelectedRow());
-		// TODO Auto-generated method stub
-
+//		System.out.println("Pressed " + organiserTable.getSelectedRow());
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		System.out.println("Released " + organiserTable.getSelectedRow());
-
+//		System.out.println("Released " + organiserTable.getSelectedRow());
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		System.out.println("Entered " + organiserTable.getSelectedRow());		
+//		System.out.println("Entered " + organiserTable.getSelectedRow());		
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		System.out.println("Exited " + organiserTable.getSelectedRow());
+//		System.out.println("Exited " + organiserTable.getSelectedRow());
+	}
+
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		int row = e.getFirstRow();
+		int column = e.getColumn();
+		// Only update the data if we have an update event and it's not initial draw (-1) else throws exception
+		if ((e.getType() == TableModelEvent.UPDATE) && (row != -1) && (column != -1)){
+			String columnName = organiserTableModel.getColumnName(column);
+			String data = organiserTableModel.getValueAt(row, column).toString();
+			// Because users can shuffle the columns, we can't use column number
+			organiser.updateData(row, columnName, data);
+			System.out.println("row = " + row + " column = " + column + " name = " + columnName + " data = " + data);
+		}
 	}
 
 }
