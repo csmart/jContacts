@@ -1,103 +1,256 @@
+/**
+ * 
+ * Organiser
+ * 
+ * This is the controller component of the model-view-controller design pattern.
+ * It holds the program data and provides methods for controlling the data.
+ * 
+ * @author Chris Smart <distroguy@gmail.com>
+ * @since 2015-02-01
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.distroguy.jContacts;
 
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 
-// read prefs, set variables, i.e. data format (e.g. JSON/XML)
-// create arraylist of contacts
-// load in data from saved file/load()
-// populate arraylist with contact objects based on file
-// provide methods for:
-	// getting all contact objects from arraylist
-	// getting contact objects from arraylist based on regex
-	// adding a new object
-	// deleting an object
-	// editing an object
-
+/**
+ * Organiser
+ * 
+ * The Organiser class which holds the data of the program and provides methods
+ * for getting and setting that data.
+ * 
+ * @param Takes
+ *            nothing
+ * @return Returns nothing
+ *
+ */
 public class Organiser {
 
 	// Array list to store contact objects
 	private ArrayList<Contact> contacts;
+	private Database data;
 
-	// Preferences
-	private String dataFormat = "json";
+	// Default preferences
+//	Preferences prefs = Preferences.
+	private String dataFormat = "serial";
+	private String filename = "sample.ser";
 
-	public Organiser(){
+	/**
+	 * Organiser
+	 * 
+	 * Default constructor for the Organiser object
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns nothing
+	 *
+	 */
+	public Organiser() {
+		// Create empty ArrayList of Contact objects
 		contacts = new ArrayList<Contact>();
-		loadPrefs();
-		load();
 	}
 
-	// Load database
-	public int load(){
-		// Read in database and build arraylist of contacts
-		// TODO
-		
-		// Dummy data for now
-		Contact newContact = new Contact();
-		newContact.setSalutation("Mr");
-		newContact.setFirstname("Chris");
-//		newContact.setMiddlename("");
-		newContact.setLastname("Smart");
-		newContact.setPhone("026123456");
-		newContact.setMobile("04123456");
-		contacts.add(newContact);
-		
-		Contact newContact2 = new Contact();
-		newContact2.setSalutation("Dr");
-		newContact2.setFirstname("Ringo");
-		newContact2.setMiddlename("the");
-		newContact2.setLastname("Star");
-		newContact2.setPhone("+12123456");
-		newContact2.setMobile("+14123456");
-		contacts.add(newContact2);
-
-		// Check for success?
-		return 0;
+	/**
+	 * load
+	 * 
+	 * Calls the Database class to read in any persistent dataset from disk and
+	 * populates the contact list with it
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns nothing
+	 *
+	 */
+	public void load() {
+		// Create a new file for loading and saving, passing new filename from
+		// prefs if exists
+		data = new Database(filename);
+		// Stub for setting the file format
+		data.setFormat(dataFormat);
+		// If the file exists, then let's load the contacts into the ArrayList,
+		// else start fresh
+		if (data.checkExists()) {
+//			System.out.println("We're checking if data exists");
+			contacts = data.readDataset();
+		}
 	}
 
-	// Load database
-	public int save(){
-		// Write arraylist out to contact in format as per prefs
-		return 0;
+	/**
+	 * save
+	 * 
+	 * Calls the Database class to write out the contact list to disk
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns nothing
+	 *
+	 */
+	public Boolean save() {
+		if (data.saveDataset(filename, contacts)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
-	
-	// Return an arraylist of all contacts
+
+	/**
+	 * setFileName
+	 * 
+	 * Passes the name of a file we want to use for loading and saving to the
+	 * Database class.
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns nothing
+	 *
+	 */
+	public void setFilename(String filename) {
+		data.setFilename(filename);
+	}
+
+	/**
+	 * getContacts
+	 * 
+	 * Gets the current dataset in the contact list
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns an arraylist of Contact objects
+	 *
+	 */
 	public ArrayList<Contact> getContacts() {
 		return contacts;
 	}
 
-	// Return a filtered arraylist for searching
-	public ArrayList<Contact> getContacts(String contact){
-		//new array for filtered contact list
+	/**
+	 * getContacts
+	 * 
+	 * Gets a filtered set of data from the contact list dataset, for searching
+	 * 
+	 * @param Takes
+	 *            a String to match a Contact with
+	 * @return Returns an ArrayList of matching Contact objects
+	 *
+	 */
+	public ArrayList<Contact> getContacts(String contact) {
 		ArrayList<Contact> contactsFiltered = new ArrayList<Contact>();
-		//search through arraylist for String "contact", return new list
+		// TO-DO search through arraylist for String "contact", return new list
 		return contactsFiltered;
 	}
 
-	// load in preferences and set variables
-	public void loadPrefs(){
+	/**
+	 * loadPrefs
+	 * 
+	 * Loads in the preferences and sets program variables based on the data
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns nothing
+	 *
+	 */
+	public void loadPrefs() {
+		// TO-DO
 		System.out.println("Loading preferences");
 	}
-	
-	// Return a 2-dimensional array of contact data (useful for table)
-	public String[][] getStrings(){
-		String[][] contactStrings = new String[contacts.size()][Contact.getAttributes().length];
+
+	/**
+	 * getStrings
+	 * 
+	 * Formats the dataset in two-dimensional array
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns two-dimensional String array with complete contact list
+	 *         dataset
+	 *
+	 */
+	public String[][] getStrings() {
+		String[][] contactStrings = new String[contacts.size()][Contact
+				.getAttributes().length];
 		int i = 0;
-		for (Contact thisContact : contacts){
+		for (Contact thisContact : contacts) {
 			contactStrings[i] = thisContact.getStrings();
 			i++;
 		}
 		return contactStrings;
 	}
-	
-	// Create a new contact
-	public void addContact(){
+
+	/**
+	 * getStrings
+	 * 
+	 * Loads in the preferences and sets program variables based on the data
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns two-dimensional String array with complete contact list
+	 *         dataset
+	 *
+	 */
+	public String[][] getStrings(String filter) {
+		filter = filter.toLowerCase();
+		String[][] contactStrings = new String[contacts.size()][Contact
+				.getAttributes().length];
+		int i = 0;
+		for (Contact thisContact : contacts) {
+			String[] strings = thisContact.getStrings();
+			if (thisContact.getFirstname().toLowerCase().contains(filter)
+					|| thisContact.getMiddlename().toLowerCase()
+							.contains(filter)
+					|| thisContact.getLastname().toLowerCase().contains(filter)) {
+				contactStrings[i] = strings;
+				i++;
+			}
+		}
+		// We only want to return an array with filtered objects
+		String[][] contactStringsFiltered = new String[i][Contact
+				.getAttributes().length];
+		for (int j = 0; j < i; j++) {
+			contactStringsFiltered[j] = contactStrings[j];
+		}
+		return contactStringsFiltered;
+	}
+
+	/**
+	 * addContact
+	 * 
+	 * Adds a new Contact object to the contact list
+	 * 
+	 * @param Takes
+	 *            nothing
+	 * @return Returns nothing
+	 *
+	 */
+	public void addContact() {
 		Contact newContact = new Contact();
 		contacts.add(newContact);
 	}
 
-	// Copy an existing contact to a new one
-	public void copyContact(int user){
+	/**
+	 * copyContact
+	 * 
+	 * Copies an existing Contact to a new Contact object in the contact list
+	 * 
+	 * @param Takes
+	 *            an int index of the Contact list array which is the one to
+	 *            copy from
+	 * @return Returns nothing
+	 *
+	 */
+	public void copyContact(int user) {
 		Contact newContact = new Contact();
 		String[] copyData = contacts.get(user).getStrings();
 		newContact.setStrings(copyData);
@@ -105,28 +258,70 @@ public class Organiser {
 		contacts.add(newContact);
 	}
 
-	// Delete an existing contact
+	/**
+	 * delContact
+	 * 
+	 * Deletes an existing Contact from the contact list
+	 * 
+	 * @param Takes
+	 *            a Contact object to delete
+	 * @return Returns nothing
+	 *
+	 */
 	public void delContact(Contact contact) {
 		contacts.remove(contact);
 	}
 
-	// Return a contact object from arraylist
+	/**
+	 * getContact
+	 * 
+	 * Gets a Contact from the contact list
+	 * 
+	 * @param Takes
+	 *            an int index of the list array pointing to the Contact to get
+	 * @return Returns Contact object
+	 *
+	 */
 	public Contact getContact(int i) {
 		return contacts.get(i);
 	}
 
-	// Return a contact object that matches given UUID
+	/**
+	 * getContact
+	 * 
+	 * Gets a Contact from the contact list
+	 * 
+	 * @param Takes
+	 *            a string to match a UUID with a Contact object in contact list
+	 * @return Returns Contact object
+	 *
+	 */
 	public Contact getContact(String uuid) {
-		for (Contact thisContact : contacts){
-			if (thisContact.getUuid().equals(uuid));{
+		for (Contact thisContact : contacts) {
+			if (thisContact.getUuid().equals(uuid))
+				;
+			{
 				System.out.println("removed " + thisContact.getFirstname());
-				return(thisContact);
+				return (thisContact);
 			}
 		}
 		return null;
 	}
 
-	// Update specific data for a contact
+	/**
+	 * updateData
+	 * 
+	 * Updates a particular attribute for a Contact object
+	 * 
+	 * @param Takes
+	 *            an int index of the list array pointing to the contact to set
+	 * @param Takes
+	 *            a String with the name of the attribute to set
+	 * @param Takes
+	 *            a String with the value of the attribute to set
+	 * @return Returns nothing
+	 *
+	 */
 	public void updateData(int row, String columnName, String data) {
 		contacts.get(row).setString(columnName, data);
 	}
