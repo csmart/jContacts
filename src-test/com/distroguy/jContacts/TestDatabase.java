@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.sun.corba.se.impl.orbutil.closure.Constant;
-
 /**
  * TestDatabase
  * 
@@ -50,7 +48,6 @@ public class TestDatabase {
 	@Before
 	public void setup() {
 		testDatabase = new Database(TESTFILE);
-		ArrayList<Contact> contactList = new ArrayList<Contact>();
 		testOrganiser = new Organiser();
 	}
 
@@ -66,9 +63,9 @@ public class TestDatabase {
 				"+61234567890", "(02) 34567890" };
 		testOrganiser.addContact();
 		testOrganiser.getContact(0).setStrings(testValues);
-		assertTrue((testDatabase.saveDataset(TESTFILE, testOrganiser.getContacts())));
+		assertTrue((testDatabase.saveDataset(testOrganiser.getContacts())));
 		ArrayList<Contact> contactListRead = new ArrayList<Contact>();
-		
+
 		// Read back out (verifies write worked)
 		contactListRead = testDatabase.readDataset();
 

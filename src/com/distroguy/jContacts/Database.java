@@ -47,35 +47,47 @@ public class Database {
 	// Create a file object so we can test for it
 	File organiserFile;
 	String dataFormat;
+
+	/**
+	 * Database
+	 * 
+	 * Constructor for the Database object
+	 * 
+	 * @param Takes a String for filename
+	 * @return Returns nothing
+	 *
+	 */
+	Database(String filename) {
+		organiserFile = new File(filename);
+	}
 	
 	/**
 	 * Database
 	 * 
 	 * Default constructor for the Database object
 	 * 
-	 * @param Takes a String for filename
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
-	Database(String filename){
-		organiserFile = new File(filename);
+	Database() {
 	}
-
+	
 	/**
 	 * checkExists
 	 * 
-	 * Checks to see if the persistent file that holds the dataset already exists
+	 * Checks to see if the persistent file that holds the dataset already
+	 * exists
 	 * 
 	 * @param Takes nothing
 	 * @return Returns Boolean
 	 *
 	 */
 	public Boolean checkExists() {
-		if(organiserFile.exists() && organiserFile.isFile() && organiserFile.canWrite() && organiserFile.canWrite()){
-//			System.out.println("File exists!");
+		if (organiserFile.exists() && organiserFile.isFile()
+				&& organiserFile.canWrite() && organiserFile.canWrite()) {
 			return true;
-		}else{
-//			System.out.println("FILE DOES NOT EXIST!");
+		} else {
 			return false;
 		}
 	}
@@ -83,17 +95,20 @@ public class Database {
 	/**
 	 * readDataset
 	 * 
-	 * Reads in any data from disk and formats as an ArrayList for Organiser class
+	 * Reads in any data from disk and formats as an ArrayList for Organiser
+	 * class
 	 * 
 	 * @param Takes nothing
 	 * @return Returns ArrayList of the dataset
 	 *
 	 */
-	public ArrayList<Contact> readDataset(){
+	public ArrayList<Contact> readDataset() {
 		ArrayList<Contact> newContacts = new ArrayList<Contact>();
 		try {
-			ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(organiserFile.getName()));
+			ObjectInputStream inputStream = new ObjectInputStream(
+					new FileInputStream(organiserFile.getAbsolutePath()));
 			newContacts = (ArrayList<Contact>) inputStream.readObject();
+			inputStream.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -104,10 +119,6 @@ public class Database {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-//		//debug
-//		for (Contact contact : newContacts){
-//			System.out.println("This is my contact list: " + contact.getFirstname());
-//		}
 		return newContacts;
 	}
 
@@ -121,9 +132,10 @@ public class Database {
 	 * @return Returns nothing
 	 *
 	 */
-	public Boolean saveDataset(String filename, ArrayList<Contact> contacts){
+	public Boolean saveDataset(ArrayList<Contact> contacts) {
 		try {
-			ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(organiserFile.getAbsolutePath()));		
+			ObjectOutputStream outputStream = new ObjectOutputStream(
+					new FileOutputStream(organiserFile.getAbsolutePath()));
 			outputStream.writeObject(contacts);
 			outputStream.flush();
 			outputStream.close();
@@ -143,7 +155,7 @@ public class Database {
 	 *
 	 */
 	public void setFormat(String dataFormat) {
-		dataFormat = dataFormat;
+		// TO-DO
 	}
 
 	/**
@@ -151,8 +163,7 @@ public class Database {
 	 * 
 	 * Sets the name of the file to write data to
 	 * 
-	 * @param Takes
-	 *            String for file name
+	 * @param Takes String for file name
 	 * @return Returns nothing
 	 *
 	 */

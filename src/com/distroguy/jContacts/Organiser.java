@@ -25,7 +25,6 @@
 package com.distroguy.jContacts;
 
 import java.util.ArrayList;
-import java.util.prefs.Preferences;
 
 /**
  * Organiser
@@ -33,8 +32,7 @@ import java.util.prefs.Preferences;
  * The Organiser class which holds the data of the program and provides methods
  * for getting and setting that data.
  * 
- * @param Takes
- *            nothing
+ * @param Takes nothing
  * @return Returns nothing
  *
  */
@@ -45,7 +43,7 @@ public class Organiser {
 	private Database data;
 
 	// Default preferences
-//	Preferences prefs = Preferences.
+	// Preferences prefs = Preferences. // TO-DO
 	private String dataFormat = "serial";
 	private String filename = "sample.ser";
 
@@ -54,14 +52,13 @@ public class Organiser {
 	 * 
 	 * Default constructor for the Organiser object
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
 	public Organiser() {
-		// Create empty ArrayList of Contact objects
 		contacts = new ArrayList<Contact>();
+		data = new Database();
 	}
 
 	/**
@@ -70,23 +67,24 @@ public class Organiser {
 	 * Calls the Database class to read in any persistent dataset from disk and
 	 * populates the contact list with it
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
-	public void load() {
-		// Create a new file for loading and saving, passing new filename from
-		// prefs if exists
+	public Boolean load() {
+		// Create a new file for loading and saving, passing new filename from prefs if exists
 		data = new Database(filename);
 		// Stub for setting the file format
-		data.setFormat(dataFormat);
-		// If the file exists, then let's load the contacts into the ArrayList,
-		// else start fresh
+		data.setFormat(dataFormat); // TO-DO
+		// If the file exists, then let's load the contacts into the ArrayList
 		if (data.checkExists()) {
-//			System.out.println("We're checking if data exists");
-			contacts = data.readDataset();
+			ArrayList<Contact> contactsTemp = data.readDataset();
+			if (! contactsTemp.isEmpty()){
+				contacts = contactsTemp;
+				return true;
+			}
 		}
+		return false;
 	}
 
 	/**
@@ -94,17 +92,12 @@ public class Organiser {
 	 * 
 	 * Calls the Database class to write out the contact list to disk
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
 	public Boolean save() {
-		if (data.saveDataset(filename, contacts)) {
-			return true;
-		} else {
-			return false;
-		}
+		return data.saveDataset(contacts);
 	}
 
 	/**
@@ -113,13 +106,26 @@ public class Organiser {
 	 * Passes the name of a file we want to use for loading and saving to the
 	 * Database class.
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
 	public void setFilename(String filename) {
+		this.filename = filename;
 		data.setFilename(filename);
+	}
+
+	/**
+	 * getFilename
+	 * 
+	 * Returns the current filename
+	 * 
+	 * @param Takes nothing
+	 * @return Returns String of file name
+	 *
+	 */
+	public String getFilename() {
+		return filename;
 	}
 
 	/**
@@ -127,8 +133,7 @@ public class Organiser {
 	 * 
 	 * Gets the current dataset in the contact list
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns an arraylist of Contact objects
 	 *
 	 */
@@ -141,8 +146,7 @@ public class Organiser {
 	 * 
 	 * Gets a filtered set of data from the contact list dataset, for searching
 	 * 
-	 * @param Takes
-	 *            a String to match a Contact with
+	 * @param Takes a String to match a Contact with
 	 * @return Returns an ArrayList of matching Contact objects
 	 *
 	 */
@@ -157,8 +161,7 @@ public class Organiser {
 	 * 
 	 * Loads in the preferences and sets program variables based on the data
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
@@ -172,10 +175,8 @@ public class Organiser {
 	 * 
 	 * Formats the dataset in two-dimensional array
 	 * 
-	 * @param Takes
-	 *            nothing
-	 * @return Returns two-dimensional String array with complete contact list
-	 *         dataset
+	 * @param Takes nothing
+	 * @return Returns two-dimensional String array with complete contact list dataset
 	 *
 	 */
 	public String[][] getStrings() {
@@ -194,10 +195,8 @@ public class Organiser {
 	 * 
 	 * Loads in the preferences and sets program variables based on the data
 	 * 
-	 * @param Takes
-	 *            nothing
-	 * @return Returns two-dimensional String array with complete contact list
-	 *         dataset
+	 * @param Takes nothing
+	 * @return Returns two-dimensional String array with complete contact list dataset
 	 *
 	 */
 	public String[][] getStrings(String filter) {
@@ -229,8 +228,7 @@ public class Organiser {
 	 * 
 	 * Adds a new Contact object to the contact list
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
@@ -244,9 +242,7 @@ public class Organiser {
 	 * 
 	 * Copies an existing Contact to a new Contact object in the contact list
 	 * 
-	 * @param Takes
-	 *            an int index of the Contact list array which is the one to
-	 *            copy from
+	 * @param Takes an int index of the Contact list array which is the one to copy from
 	 * @return Returns nothing
 	 *
 	 */
@@ -263,8 +259,7 @@ public class Organiser {
 	 * 
 	 * Deletes an existing Contact from the contact list
 	 * 
-	 * @param Takes
-	 *            a Contact object to delete
+	 * @param Takes a Contact object to delete
 	 * @return Returns nothing
 	 *
 	 */
@@ -277,8 +272,7 @@ public class Organiser {
 	 * 
 	 * Gets a Contact from the contact list
 	 * 
-	 * @param Takes
-	 *            an int index of the list array pointing to the Contact to get
+	 * @param Takes an int index of the list array pointing to the Contact to get
 	 * @return Returns Contact object
 	 *
 	 */
@@ -291,17 +285,13 @@ public class Organiser {
 	 * 
 	 * Gets a Contact from the contact list
 	 * 
-	 * @param Takes
-	 *            a string to match a UUID with a Contact object in contact list
+	 * @param Takes a string to match a UUID with a Contact object in contact list
 	 * @return Returns Contact object
 	 *
 	 */
 	public Contact getContact(String uuid) {
 		for (Contact thisContact : contacts) {
-			if (thisContact.getUuid().equals(uuid))
-				;
-			{
-				System.out.println("removed " + thisContact.getFirstname());
+			if (thisContact.getUuid().equals(uuid)){
 				return (thisContact);
 			}
 		}
@@ -313,12 +303,9 @@ public class Organiser {
 	 * 
 	 * Updates a particular attribute for a Contact object
 	 * 
-	 * @param Takes
-	 *            an int index of the list array pointing to the contact to set
-	 * @param Takes
-	 *            a String with the name of the attribute to set
-	 * @param Takes
-	 *            a String with the value of the attribute to set
+	 * @param Takes an int index of the list array pointing to the contact to set
+	 * @param Takes a String with the name of the attribute to set
+	 * @param Takes a String with the value of the attribute to set
 	 * @return Returns nothing
 	 *
 	 */

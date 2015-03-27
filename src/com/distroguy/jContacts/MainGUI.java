@@ -29,8 +29,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -54,14 +52,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * @author Chris Smart <distroguy@gmail.com>
- * GPLv3+
- *
- */
 
-public class MainGUI implements Runnable, ActionListener, MouseListener,
-		TableModelListener, DocumentListener {
+public class MainGUI implements Runnable, ActionListener, TableModelListener, DocumentListener {
 
 	// create our organiser
 	Organiser organiser;
@@ -77,10 +69,17 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	JButton clearButton;
 
 	// Constants for GUI
-	private static final String ABOUT_MESSAGE = "This is an Organiser program which can maintain a contact list.\n\nCopyright Chris Smart <distroguy@gmail.com>\nLicensed under the GPLv3 or later.";
-	private static final String FAILED_SAVE = "Failed to save file";
-	private static final String FILE_SAVED = "File saved.";
+	private static final String ABOUT_MESSAGE = "This is an Organiser program which can maintain a contact list."
+			+ "\n\nCopyright Chris Smart <distroguy@gmail.com>\nLicensed under the GPLv3 or later.";
+	private static final String FAILED_SAVE = "Failed to save file to ";
+	private static final String FILE_SAVED = "File saved to ";
 	private static final String SAVE = "Save";
+	private static final String ABOUT = "About";
+	private static final String LOAD = "Load";
+	private static final String QUIT = "Quit";
+	private static final String QUIT_MSG = "Are you really a quitter!?";
+	private static final String LOAD_FAILED = "Failed to load file ";
+	private static final String PLEASE_SAVE = "Please save the file.";
 
 	public MainGUI() {
 		// Invoke the main UI later to avoid race conditions
@@ -92,10 +91,8 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * 
 	 * Adds menu items to a Swing GUI menu, adds an action listener and command
 	 * 
-	 * @param Takes
-	 *            a string for the title of the menu item
-	 * @param Takes
-	 *            a menu object to add the menu item to
+	 * @param Takes a string for the title of the menu item
+	 * @param Takes a menu object to add the menu item to
 	 * @return Returns the new menu item object
 	 *
 	 */
@@ -113,10 +110,8 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * Adds buttons to a given Swing GUI JPanel object, adds an action listener
 	 * and command
 	 * 
-	 * @param Takes
-	 *            a string for the title of the button
-	 * @param Takes
-	 *            a JPanel object to add the button to
+	 * @param Takes a string for the title of the button
+	 * @param Takes a JPanel object to add the button to
 	 * @return Returns the new button object
 	 *
 	 */
@@ -134,8 +129,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * Initialises and sets the layout of the GUI, as well as interfacing with
 	 * our controller to get the contact list dataset
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
@@ -143,39 +137,29 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 		// Set up data
 		organiser = new Organiser();
 		organiser.loadPrefs();
-		organiser.load();
-//		// debug - print out objects in arraylist
-//		for (Contact thisContact : organiser.getContacts()) {
-//			System.out.println(thisContact.getFirstname());
-//		}
-
+ 
 		// Create frame for application and set exit
 		organiserFrame = new JFrame("Organiser");
 		organiserFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		// Explicitly set layout to be BorderLayout in case defaults change in
-		// future
+		// Explicitly set layout to be BorderLayout in case defaults change in future
 		organiserPane = organiserFrame.getContentPane();
 		organiserPane.setLayout(new BorderLayout());
 
-		// Create table to hold our contact list data, set model, add listener
-		// so we can get data changes
+		// Create table to hold our contact list data, set model, add listener so we can get data changes
 		organiserTableModel = new DefaultTableModel();
 		organiserTable = new JTable(organiserTableModel);
 		organiserTable.getModel().addTableModelListener(this);
 
 		// Create data and populate table
 		tableColumns = Contact.getAttributes();
-		setTableData();
 		JScrollPane tablePane = new JScrollPane(organiserTable);
 		organiserTable.setFillsViewportHeight(true);
-		organiserTable.addMouseListener(this);
 
 		// Create file chooser
 		fileChooser = new JFileChooser();
 
-		// Add the menu to the top of the window, where we can exit and perform
-		// tasks
+		// Add the menu to the top of the window, where we can exit and perform tasks
 		JMenuBar organiserMenuBar = new JMenuBar();
 		JMenu organiserFileMenu = new JMenu("File");
 		JMenu organiserEditMenu = new JMenu("Edit");
@@ -185,19 +169,20 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 		organiserMenuBar.add(organiserHelpMenu);
 
 		// Add items in the File menu
-		JMenuItem loadMenuItem = addMenuItems("Load", organiserFileMenu);
+		JMenuItem loadNewListItem = addMenuItems("New", organiserFileMenu);
+		JMenuItem loadMenuItem = addMenuItems(LOAD, organiserFileMenu);
 		JMenuItem saveMenuItem = addMenuItems(SAVE, organiserFileMenu);
 		JMenuItem saveasMenuItem = addMenuItems("Save As", organiserFileMenu);
-		JMenuItem quitMenuItem = addMenuItems("Quit", organiserFileMenu);
+		JMenuItem quitMenuItem = addMenuItems(QUIT, organiserFileMenu);
 
 		// Add items in the Edit menu
 		JMenuItem addMenuItem = addMenuItems("Add", organiserEditMenu);
 		JMenuItem copyMenuItem = addMenuItems("Copy", organiserEditMenu);
-		JMenuItem editMenuItem = addMenuItems("Edit", organiserEditMenu);
+//		JMenuItem editMenuItem = addMenuItems("Edit", organiserEditMenu);
 		JMenuItem deleteMenuItem = addMenuItems("Delete", organiserEditMenu);
 
 		// Add about item to help menu
-		JMenuItem aboutMenuItem = addMenuItems("About", organiserHelpMenu);
+		JMenuItem aboutMenuItem = addMenuItems(ABOUT, organiserHelpMenu);
 
 		// Add the menu to the frame
 		organiserFrame.setJMenuBar(organiserMenuBar);
@@ -206,7 +191,6 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 		JPanel filterPanel = new JPanel();
 		filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.X_AXIS));
 
-		// Add search results to the center of the window
 		// Create a filter to search for names and add it to the panel
 		filter = new JTextField();
 		filter.setText("");
@@ -220,16 +204,14 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 		// Create the buttons
 		JButton addButton = addButtons("Add", buttonsPanel);
 		JButton copyButton = addButtons("Copy", buttonsPanel);
-		JButton editButton = addButtons("Edit", buttonsPanel);
+//		JButton editButton = addButtons("Edit", buttonsPanel);
 		JButton deleteButton = addButtons("Delete", buttonsPanel);
-		buttonsPanel.add(Box.createHorizontalGlue()); // Create space so others
-		// are on the right
-		JButton loadButton = addButtons("Load", buttonsPanel);
+		buttonsPanel.add(Box.createHorizontalGlue()); // Create space so others are on the right
+		JButton loadButton = addButtons(LOAD, buttonsPanel);
 		JButton saveButton = addButtons(SAVE, buttonsPanel);
-		JButton quitButton = addButtons("Quit", buttonsPanel);
+		JButton quitButton = addButtons(QUIT, buttonsPanel);
 
-		// The clear button is special, only enable it when there is something
-		// in the filter that we need to clear!
+		// The clear button is special, only enable it when there is something in the filter that we need to clear!
 		clearButton = new JButton("Clear");
 		clearButton.addActionListener(this);
 		clearButton.setActionCommand("Clear".toUpperCase() + "_PRESSED");
@@ -245,6 +227,13 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 		organiserFrame.setMinimumSize(new Dimension(800, 600));
 		organiserFrame.pack();
 		organiserFrame.setVisible(true);
+
+		// Get and set data
+		if (! organiser.load()){
+			JOptionPane.showMessageDialog(organiserFrame, LOAD_FAILED, LOAD, 0);
+		}
+		setTableData();
+
 	}
 
 	/**
@@ -252,8 +241,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * 
 	 * The entry point for starting the Organiser Swing GUI
 	 * 
-	 * @param Takes
-	 *            array of strings for program arguments
+	 * @param Takes array of strings for program arguments
 	 * @return Returns nothing
 	 *
 	 */
@@ -267,8 +255,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * Adds a new contact to the contact list via the controller, calls
 	 * functions to update the table which redraws the GUI
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
@@ -284,8 +271,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * Copies an existing contact in the list and adds it to the list, calls
 	 * functions to update the table which redraws the GUI
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
@@ -307,24 +293,20 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * Deletes a selected contact out of the contact list, calls functions to
 	 * update the table which redraws the GUI
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
 	public void delContact() {
 		int row = organiserTable.getSelectedRow();
 		if (row != -1) {
-			// Temporary array to hold a list of contact objects we need to
-			// delete
+			// Temporary array to hold a list of contact objects we need to delete
 			ArrayList<Contact> deleteContacts = new ArrayList<Contact>();
 			for (int i : organiserTable.getSelectedRows()) {
-				System.out.print(i + " ("
-						+ organiser.getContact(i).getFirstname() + ") ");
 				// Build list of contacts to delete
 				deleteContacts.add(organiser.getContact(i));
 			}
-			// Delete contacts here, no array indexing when deleting
+			// Delete contacts here, no array indexing needed
 			for (Contact contact : deleteContacts) {
 				organiser.delContact(contact);
 			}
@@ -342,8 +324,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * 
 	 * Provides/updates the contact list dataset in the table
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
@@ -356,8 +337,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * 
 	 * Provides/updates the table with filter
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
@@ -370,8 +350,7 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * 
 	 * Clears the contact list dataset in the table by setting it to nothing
 	 * 
-	 * @param Takes
-	 *            nothing
+	 * @param Takes nothing
 	 * @return Returns nothing
 	 *
 	 */
@@ -385,10 +364,8 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * Retrieves the contact list dataset via the controller for input into the
 	 * table
 	 * 
-	 * @param Takes
-	 *            nothing
-	 * @return Returns two-dimensional array of Strings, which is the format the
-	 *         table model wants
+	 * @param Takes nothing
+	 * @return Returns two-dimensional array of Strings, which is the format the table model wants
 	 *
 	 */
 	public Object[][] getTableData() {
@@ -401,10 +378,8 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	 * 
 	 * Filter the contact list
 	 * 
-	 * @param Takes
-	 *            nothing
-	 * @return Returns two-dimensional array of Strings, which is the format the
-	 *         table model wants
+	 * @param Takes nothing
+	 * @return Returns two-dimensional array of Strings, which is the format the table model wants
 	 *
 	 */
 	public Object[][] getTableData(String filter) {
@@ -429,6 +404,55 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 		}
 	}
 
+	/**
+	 * load
+	 * 
+	 * Loads a file
+	 * 
+	 * @param Takes nothing
+	 * @return Returns nothing
+	 *
+	 */
+	private void load() {
+		int res = fileChooser.showOpenDialog(organiserFrame);
+		if (res == JFileChooser.APPROVE_OPTION) {
+			String filenameCur = organiser.getFilename();
+			File file = fileChooser.getSelectedFile();
+			organiser.setFilename(file.getAbsolutePath());
+			if (! organiser.load()){
+				JOptionPane.showMessageDialog(organiserFrame, LOAD_FAILED + organiser.getFilename(), LOAD, 0);
+				// Reset filename to the old value, else saving will write to failed load file
+				organiser.setFilename(filenameCur);
+			}
+			clearTableData();
+			setTableData();
+		}
+	}
+	
+	/**
+	 * saveAs
+	 * 
+	 * Saves a file to a new name
+	 * 
+	 * @param Takes nothing
+	 * @return Returns a Boolean for success or failure
+	 *
+	 */
+	private Boolean saveAs() {
+		int res = fileChooser.showSaveDialog(organiserFrame);
+		if (res == fileChooser.APPROVE_OPTION) {
+			File file = fileChooser.getSelectedFile();
+			organiser.setFilename(file.getAbsolutePath());
+			if (organiser.save()){
+				JOptionPane.showMessageDialog(organiserFrame, FILE_SAVED + organiser.getFilename(), SAVE, 1);
+				return true;
+			}else{
+				JOptionPane.showMessageDialog(organiserFrame, FAILED_SAVE + organiser.getFilename(), SAVE, 0);
+			}
+		}
+		return false;
+	}
+
 	@Override
 	/**
 	 * actionPerformed
@@ -442,9 +466,8 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand().equals("QUIT_PRESSED")) {
 			// probably should call some clean up code
-			if ((JOptionPane.showConfirmDialog(organiserFrame,
-					"Are you really a quitter!?")) == 0) {
-				System.out.println("Bye, bye!");
+			if ((JOptionPane.showConfirmDialog(organiserFrame, QUIT_MSG, QUIT, 0)) == 0) {
+				organiser.save();
 				System.exit(0);
 			}
 		} else if (e.getActionCommand().equals("ADD_PRESSED")) {
@@ -454,70 +477,27 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 		} else if (e.getActionCommand().equals("DELETE_PRESSED")) {
 			delContact();
 		} else if (e.getActionCommand().equals("SAVE AS_PRESSED")) {
-			int res = fileChooser.showSaveDialog(organiserFrame);
-			if (res == fileChooser.APPROVE_OPTION) {
-				File file = fileChooser.getSelectedFile();
-				organiser.setFilename(file.getAbsolutePath());
-				if (organiser.save()){
-					JOptionPane.showMessageDialog(organiserFrame, FILE_SAVED, SAVE, 1);
-				}else{
-					JOptionPane.showMessageDialog(organiserFrame, FAILED_SAVE, SAVE, 0);
-				}
-			}
+			saveAs();
 		} else if (e.getActionCommand().equals("LOAD_PRESSED")) {
-			int res = fileChooser.showOpenDialog(organiserFrame);
-			if (res == fileChooser.APPROVE_OPTION) {
-				File file = fileChooser.getSelectedFile();
-				organiser.setFilename(file.getAbsolutePath());
-				organiser.load();
-				clearTableData();
-				setTableData();
-			}
+			load();
 		} else if (e.getActionCommand().equals("CLEAR_PRESSED")) {
 			filter.setText("");
 		} else if (e.getActionCommand().equals("SAVE_PRESSED")) {
 			if (organiser.save()){
-				JOptionPane.showMessageDialog(organiserFrame, FILE_SAVED, SAVE, 1);
+				JOptionPane.showMessageDialog(organiserFrame, FILE_SAVED + organiser.getFilename(), SAVE, 1);
 			}else{
-				JOptionPane.showMessageDialog(organiserFrame, FAILED_SAVE, SAVE, 0);
+				JOptionPane.showMessageDialog(organiserFrame, FAILED_SAVE + organiser.getFilename(), SAVE, 0);
 			}
 		} else if (e.getActionCommand().equals("ABOUT_PRESSED")) {
-			JOptionPane.showMessageDialog(organiserFrame, ABOUT_MESSAGE,
-					"About", 1);
-		} else {
-			// just print what we pressed, for now
-			JOptionPane.showMessageDialog(
-					organiserFrame,
-					"You pressed "
-							+ e.getActionCommand().trim().split("_PRESSED")[0]
-									.toLowerCase());
-			System.out.println(e.getActionCommand());
+			JOptionPane.showMessageDialog(organiserFrame, ABOUT_MESSAGE, ABOUT, 1);
+		} else if(e.getActionCommand().equals("NEW_PRESSED")){
+			organiser = new Organiser();
+			clearTableData();
+			setTableData();
+			while (!saveAs()){
+				JOptionPane.showMessageDialog(organiserFrame, PLEASE_SAVE, SAVE , 0);
+			}
 		}
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		// System.out.println("Pressed " + organiserTable.getSelectedRow());
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// System.out.println("Pressed " + organiserTable.getSelectedRow());
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// System.out.println("Released " + organiserTable.getSelectedRow());
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// System.out.println("Entered " + organiserTable.getSelectedRow());
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// System.out.println("Exited " + organiserTable.getSelectedRow());
 	}
 
 	@Override
@@ -533,10 +513,8 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	public void tableChanged(TableModelEvent e) {
 		int row = e.getFirstRow();
 		int column = e.getColumn();
-		// Only update the data if we have an update event and it's not an
-		// initial
-		// draw of the table (which gives -1) else this throws an exception on
-		// startup
+		// Only update the data if we have an update event and it's not an initial
+		// draw of the table (which gives -1) else this throws an exception on startup
 		if ((e.getType() == TableModelEvent.UPDATE) && (row != -1)
 				&& (column != -1)) {
 			String columnName = organiserTableModel.getColumnName(column);
@@ -544,8 +522,6 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 					.toString();
 			// Because users can shuffle the columns, we can't use column number
 			organiser.updateData(row, columnName, data);
-			System.out.println("row = " + row + " column = " + column
-					+ " name = " + columnName + " data = " + data);
 		}
 	}
 
@@ -553,7 +529,6 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	public void removeUpdate(DocumentEvent e) {
 		clearTableData();
 		setTableData(filter.getText());
-		System.out.println(filter.getText());
 		showButton(filter.getText());
 	}
 
@@ -561,7 +536,6 @@ public class MainGUI implements Runnable, ActionListener, MouseListener,
 	public void insertUpdate(DocumentEvent e) {
 		clearTableData();
 		setTableData(filter.getText());
-		System.out.println(filter.getText());
 		showButton(filter.getText());
 	}
 
